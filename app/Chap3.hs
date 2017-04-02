@@ -21,7 +21,7 @@ listAppend a b = (++) a b
 -- 2.
 -- '<3' ++ ' Haskell'
 iHeartHaskell :: String
-iHeartHaskell = "<3" ++ " Haskell"
+iHeartHaskell = "<3" ++ " haskell"
 
 -- 3.
 -- no syntax error
