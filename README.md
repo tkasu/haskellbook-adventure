@@ -1,1 +1,1 @@
-# Newbies journey through [Haskell Programming](http://haskellbook.com) 
+# Newbie's journey through [Haskell Programming](http://haskellbook.com) 
