@@ -213,3 +213,31 @@ capHead' :: [Char] -> Char
 capHead' = toUpper . head
 
 -- Ciphers in module Cipher.hs
+
+
+-- Writing your own standard functions
+
+myAnd :: [Bool] -> Bool
+myAnd [] = True
+myAnd (x:xs) = if x == False then False else myAnd xs
+
+-- 1.
+myOr :: [Bool] -> Bool
+myOr [] = False
+myOr (x:xs) = if x == True then True else myOr xs
+
+-- 2.
+myAny :: (a -> Bool) -> [a] -> Bool
+myAny _ [] = False
+myAny f (x:xs) = if f x then True else myAny f xs 
+
+-- 3.
+myElem :: Eq a => a -> [a] -> Bool
+myElem e l = myAny (== e) l
+
+-- 4.
+myReverse :: [a] -> [a]
+myReverse [] = []
+myReverse l = go l []
+  where go [] acc     = acc
+        go (x:xs) acc = go xs ([x] ++ acc)
