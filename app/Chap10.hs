@@ -1,4 +1,6 @@
-module Chap9 where
+module Chap10 where
+
+import Data.Time 
 
 
 test x = x + 1
@@ -58,3 +60,146 @@ fixFoldH = foldl const 0 "burritos"
 
 --origI = foldl (flip const) 'z' [1..5]
 fixFoldI = foldl const 'z' [1..5]
+
+-- Exercises: Database Processing
+
+data DatabaseItem = DbString String
+                  | DbNumber Integer
+                  | DbDate   UTCTime
+                    deriving (Eq, Ord, Show)
+
+theDatabase :: [DatabaseItem] 
+theDatabase =
+    [DbDate (UTCTime
+            (fromGregorian 1911 5 1)
+            (secondsToDiffTime 34123))
+    , DbNumber 9001
+    , DbString "Hello, world!"
+    , DbDate (UTCTime
+                (fromGregorian 1921 5 1)
+                (secondsToDiffTime 34123))
+    ]
+
+-- 1.
+-- foldr may not be optimal for this (maybe filter?), but this is recursion chapter after all
+filterDbDate :: [DatabaseItem] -> [UTCTime]
+filterDbDate db = foldr f [] db
+    where f next acc =
+            case next of
+              DbDate x -> [x] ++ acc
+              x -> [] ++ acc
+
+-- 2.
+filterDbNumber :: [DatabaseItem] -> [Integer]
+filterDbNumber db = foldr f [] db
+    where f next acc =
+            case next of
+              DbNumber x -> [x] ++ acc
+              x -> [] ++ acc
+
+-- 3.
+mostRecent :: [DatabaseItem] -> UTCTime 
+mostRecent db = maximum $ filterDbDate db
+
+-- 4.
+sumDb :: [DatabaseItem] -> Integer
+sumDb db = sum $ filterDbNumber db
+
+mixedIdentityDatabase :: [DatabaseItem]
+mixedIdentityDatabase = DbNumber 1234 : theDatabase
+
+testSumDb :: Integer
+testSumDb = sumDb mixedIdentityDatabase
+
+-- 5.
+countDbNums :: [DatabaseItem] -> Int
+countDbNums db = length $ filterDbNumber db
+
+avgDb :: [DatabaseItem] -> Double 
+avgDb db = (fromIntegral $ sumDb db) / (fromIntegral $ countDbNums db) 
+
+-- Scan exericese
+fibs :: [Integer]
+fibs = 1 : scanl (+) 1 fibs
+
+-- 1.
+fibsFirstN :: Int -> [Integer]
+fibsFirstN n = take n fibs
+
+fibsFirst20 = fibsFirstN 20
+
+-- 2.
+-- first try, but not a good one as it goes on and on
+fibsLessThanN :: Integer -> [Integer]
+fibsLessThanN n = [x | x <- fibs, x < n]
+
+-- second try, same problem than with first try
+fibsLessThanN' :: Integer -> [Integer]
+fibsLessThanN' n = foldr f [] fibs
+                where f next acc 
+                        | next < n  = next : acc
+                        | otherwise = acc
+
+-- better and simpler
+fibsLessThanN'' :: Integer -> [Integer]
+fibsLessThanN'' n = takeWhile (\x -> x < n) fibs
+                
+fibsLessThan100 = fibsLessThanN'' 100
+
+-- 3.
+-- first without scan
+factorial :: Integer -> Integer
+factorial 1 = 1
+factorial n = n * factorial (n - 1)
+
+-- with scan
+factorialSeries :: [Integer]
+factorialSeries = scanl (*) 1 [2..]
+
+factorial' :: Int -> Integer
+factorial' n = factorialSeries !! (n - 1)
+
+
+-- Chapter Exerceis
+
+-- Warm up and review
+
+-- 1.
+stops  = "pbtdkg"
+vowels = "aeiou"
+
+-- a.
+allCombinationsXYX :: [a] -> [b] -> [(a, b, a)]
+allCombinationsXYX [] yl = []
+allCombinationsXYX xl [] = []
+allCombinationsXYX xl yl = [(x, y, z) | x <- xl, y <- yl, z <- xl]
+
+-- b.
+combsXYXThat :: [a] -> [b] -> ((a, b, a) -> Bool) -> [(a, b, a)]
+combsXYXThat [] yl pred = []
+combsXYXThat xl [] pred = []
+combsXYXThat xl yl pred = filter pred $ allCombinationsXYX xl yl
+
+stopVowelsStartWithP :: [(Char, Char, Char)]
+stopVowelsStartWithP = combsXYXThat stops vowels isP
+                    where isP (x, _, _) = (==) x 'p'
+
+-- c.
+nouns = ["people", "history", "way", "art", "world"]
+verbs = ["were", "had", "did", "said", "went"]
+
+nounsVerbsCombs :: [(String, String, String)]
+nounsVerbsCombs = allCombinationsXYX nouns verbs
+
+-- 2. 
+-- calculates average length of a word in a text
+seekritFunc :: String -> Int
+seekritFunc x =
+    div (sum (map length (words x)))
+        (length (words x))
+
+-- 3.
+seekritFuncAcc :: String -> Double
+seekritFuncAcc x =
+    (/) (fromIntegral $ sum (map length (words x)))
+        (fromIntegral $ length (words x))
