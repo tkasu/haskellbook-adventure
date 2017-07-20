@@ -203,3 +203,60 @@ seekritFuncAcc :: String -> Double
 seekritFuncAcc x =
     (/) (fromIntegral $ sum (map length (words x)))
         (fromIntegral $ length (words x))
+
+
+-- Rewriting functions using folds
+
+myOr :: [Bool] -> Bool 
+myOr = foldr (||) False
+
+myAny :: (a -> Bool) -> [a] -> Bool 
+myAny f xs = foldr fChain False xs
+    where fChain = \next acc -> (f next) || acc
+
+myElem :: Eq a => a -> [a] -> Bool
+myElem x xs = myAny ((==) x) xs
+
+myElem' :: Eq a => a -> [a] -> Bool
+myElem' x xs = foldr (\next acc -> ((==) x next) || acc) False xs
+
+myReverse :: [a] -> [a] 
+myReverse = foldl (flip (:)) []
+
+myMap :: (a -> b) -> [a] -> [b]
+myMap f xs = foldr fChain [] xs
+    where fChain = \next acc -> (f next) : acc
+
+myFilter :: (a -> Bool) -> [a] -> [a]
+myFilter f xs = foldr fChain [] xs
+    where fChain = \next acc -> case (f next) of
+                                    True -> next : acc
+                                    False -> acc
+
+squish :: [[a]] -> [a] 
+squish = foldr f []
+    where f = \next acc -> foldr (:) acc next
+
+squishMap :: (a -> [b]) -> [a] -> [b]
+squishMap f xs = foldr fChain [] xs
+    where fChain = \next acc -> (f next) ++ acc
+
+--maybe later, too much to ask atm
+squishAgain :: [[a]] -> [a] 
+squishAgain = undefined 
+
+-- This is only working with compare, I don't fully understand to purpose of myMaximumBy (\_ _ -> GT) [1..10] = 1
+myMaximumBy :: (a -> a -> Ordering) -> [a] -> a 
+myMaximumBy f (x:xs) = foldr fChain x xs
+        where fChain = \next acc -> case (f next acc) of 
+                                        GT -> next
+                                        LT -> acc
+                                        EQ -> acc
+
+-- Same as above, only works with compare
+myMinimumBy :: (a -> a -> Ordering) -> [a] -> a 
+myMinimumBy f (x:xs) = foldr fChain x xs
+        where fChain = \next acc -> case (f next acc) of 
+                                        LT -> next
+                                        GT -> acc
+                                        EQ -> acc
